@@ -6,7 +6,12 @@ public class greedyMatch {
 	// This function implements the Greedy match routine to match the leftover
 	// supplies and demands from the GTTransport
 	// implementations. 
-
+	
+	public int testFunction(int x) {
+		return x + 1;
+	}
+	
+	
 	//function greedyCapacity = greedyMatch(n, gsupplies, gdemands, CostGreedy)
 	
 	public double[][] greedyMatcher(int n, double[] gSupplies, double[] gDemands, double[][] CostGreedy) {
