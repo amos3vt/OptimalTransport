@@ -5,7 +5,8 @@ package optimalTransport;
 
 
 public class GTTransport {
-	
+	private static double[] vertexVisited;
+	private static int AugPathVerIndex;
 	
 	public static double[][] Transport(double[][] C, double[] supplies, double[] demands, int n) {
 		
@@ -49,7 +50,7 @@ public class GTTransport {
 		
 		for(int j = 0; j < n; j++) {
 			for(int i = 0; i < n; i++) {
-				capacityBA[i][j] = Math.min(deficiencyB[j], deficiencyA[i]);
+				capacityBA[i][j] = Math.min(deficiencyB[j], deficiencyA[i]); //fix matlab vs java 2d array issues
 			}
 		}
 		
@@ -57,7 +58,7 @@ public class GTTransport {
 		
 		double[][] slackAB = new double[n][n];
 		double[][] slackBA = new double[n][n];
-		double[] vertexVisited = new double[2*n];
+		vertexVisited = new double[2*n];
 		double[] augmentingPathVertices = new double[2*n];
 		for(int i = 0; i < n; i++) {
 			for(int j = 0; i < n; i++) {
@@ -80,4 +81,18 @@ public class GTTransport {
 		}
 		return t;
 	}
+	
+	public static int[] DFSUtil(int vertex, int[] augmentingPathVertices, int n, double[][] slackAB, double[][] slackBA, double[][] capacityAB, double[][] capaictyBA ){
+		AugPathVerIndex = 0;
+		augmentingPathVertices[AugPathVerIndex] = vertex;
+		
+		//while(false) {}
+		return augmentingPathVertices;
+	}
+	
+	
+	
+	
+	
+	
 }

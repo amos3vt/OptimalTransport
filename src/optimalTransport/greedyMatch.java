@@ -7,12 +7,23 @@ public class greedyMatch {
 	// supplies and demands from the GTTransport
 	// implementations. 
 	
-	public int testFunction(int x) {
-		return x + 1;
+	public static void main(String args[]) { // Testing code
+		int n = 10;
+		double [] gSupplies = new double[] {0.0, 0.01, 0.01, 0.08, 0.02, 0.01, 0.01, 0.01, 0.01, 0.05};
+		double [] gDemands = new double[] {0.1, 0.01, 0.01, 0.10, 0.02, 0.01, 0.03, 0.01, 0.01, 0.00};
+		double[][] costGreedy = {{0.0, 0.9, 0.60, 0.00006, 0.042, 0.057, 0.99990, 0.0987, 0.0123456, 0.000000001},
+				{0.0034, 0.0, 0.60, 0.00006, 0.042, 0.057, 0.00990, 0.0987, 0.0123400056, 0.000000001},
+				{0.0035, 0.9, 0.0, 0.06, 0.042, 0.01111, 0.99990, 0.0987, 0.01230456, 0.0009001},
+				{0.0034, 0.1, 0.60, 0.0, 0.042, 0.02, 0.000990, 0.07, 0.00056, 0.0090001},
+				{0.0056560000008, 0.0005, 0.60, 0.00006, 0.0, 0.057, 0.00990, 0.0987, 0.567, 0.000000001},
+				{0.34, 0.30, 0.60, 0.00006, 0.042, 0.0, 0.876, 0.0987, 0.0123400056, 0.5},
+				{0.0034, 0.1230, 0.1602, 0.0001206, 0.042, 0.000121212121212, 0.0, 0.0987, 0.0123400056, 0.5},
+				{0.012034, 0.30, 0.6012, 0.0001206, 0.042, 0.005, 0.876, 0.0, 0.0123400056, 0.5},
+				{0.3124, 0.30, 0.1260, 0.000555, 0.042, 0.120, 0.81276, 0.0987, 0.0, 0.5},
+				{0.5, 0.30, 0.60, 0.0032, 0.042, 0.012, 0.876, 0.0034, 0.0014, 0.0} };
+		greedyMatch obj = new greedyMatch();
+		System.out.println(Arrays.deepToString(obj.greedyMatcher(n, gSupplies, gDemands, costGreedy)));
 	}
-	
-	
-	//function greedyCapacity = greedyMatch(n, gsupplies, gdemands, CostGreedy)
 	
 	public double[][] greedyMatcher(int n, double[] gSupplies, double[] gDemands, double[][] CostGreedy) {
 		
@@ -57,7 +68,7 @@ public class greedyMatch {
 		}
 		return indices;
 	}
-	private class Index implements Comparable{
+	private class Index implements Comparable<Index>{
 		private double value;
 		private int idx;
 		
@@ -66,9 +77,11 @@ public class greedyMatch {
 			idx = i;
 		}
 
+
 		@Override
-		public int compareTo(Object o) {
-			return ((int)(this.value - ((Index) o).value));
+		public int compareTo(Index o) {
+			//System.out.println("Test");
+			return Double.compare(this.value, o.value);
 		}
 	}
 	
