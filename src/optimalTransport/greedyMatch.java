@@ -7,7 +7,7 @@ public class greedyMatch {
 	// supplies and demands from the GTTransport
 	// implementations. 
 	
-	public static void main(String args[]) { // Testing code
+	public static void main(String args[]) { // Testing code for this class
 		int n = 10;
 		double [] gSupplies = new double[] {0.0, 0.01, 0.01, 0.08, 0.02, 0.01, 0.01, 0.01, 0.01, 0.05};
 		double [] gDemands = new double[] {0.1, 0.01, 0.01, 0.10, 0.02, 0.01, 0.03, 0.01, 0.01, 0.00};
