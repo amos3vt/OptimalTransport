@@ -26,26 +26,29 @@ public class greedyMatch {
 	}
 	
 	public double[][] greedyMatcher(int n, double[] gSupplies, double[] gDemands, double[][] CostGreedy) {
-		
+		long time = System.currentTimeMillis();
 		double[][] greedyCapacity = new double[n][n];
 		
 		int[][] I = indexSort(CostGreedy);//
+		//System.out.println(Arrays.toString(I[15]));
 		
 		for(int i = 0; i < n; i++) {
 			int j = 0;
 			while(gSupplies[i] > 0 && j < n) {
-				int id2 = (int)CostGreedy[i][j];
+				//int id2 = (int)CostGreedy[i][j];
+				int id2 = I[i][j];
+				//if(id2 > n) System.out.println(i + " " + j + " " + id2 + " "+ I[i][j]);
 				double units = Math.min(gSupplies[i], gDemands[id2]);
 				
 				greedyCapacity[i][id2] = units;
 				gSupplies[i] = gSupplies[i] - units;
-				gDemands[id2] = gSupplies[id2] - units;
+				gDemands[id2] = gDemands[id2] - units;
 				CostGreedy[i][id2] = Double.POSITIVE_INFINITY;
 				j++;
 			}
 		}
 		
-		
+		System.out.println(System.currentTimeMillis() - time);
 		return greedyCapacity;
 	}
 	
