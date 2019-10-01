@@ -7,8 +7,8 @@ package optimalTransport;
 public class GTTransport {
 	private static int[] vertexVisited;
 	private static int AugPathVerIndex;
-	private static int[] bFree;
-	private static int[] aFree;
+	//private static int[] bFree;
+	//private static int[] aFree;
 	
 	public static double[][] Transport(double[][] C, double[] supplies, double[] demands, int n) {
 		
@@ -25,8 +25,8 @@ public class GTTransport {
 		double[][] CBA = transpose(C);
 		double[][] CAB = C;
 		
-		bFree = new int[n];
-		aFree = new int[n];
+		int[] bFree = new int[n];
+		int[] aFree = new int[n];
 		
 		for(int i = 0; i < n; i++) {
 			bFree[i] = 1;
@@ -85,7 +85,7 @@ public class GTTransport {
 	}
 	
 	//public int augPathVer
-	public int[] DFSUtil(int vertex, int[] augmentingPathVertices, int n, double[][] slackAB, double[][] slackBA, double[][] capacityAB, double[][] capacityBA ){
+	public int[] DFSUtil(int vertex, int[] augmentingPathVertices, int n, double[][] slackAB, double[][] slackBA, int[] aFree, double[][] capacityAB, double[][] capacityBA ){
 		AugPathVerIndex = 0;
 		augmentingPathVertices[AugPathVerIndex] = vertex;
 		
