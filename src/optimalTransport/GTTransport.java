@@ -1,4 +1,3 @@
-
 package optimalTransport;
 
 
@@ -7,8 +6,6 @@ package optimalTransport;
 public class GTTransport {
 	private static int[] vertexVisited;
 	private static int AugPathVerIndex;
-	//private static int[] bFree;
-	//private static int[] aFree;
 	
 	public double[][] Transport(double[][] C, double[] supplies, double[] demands, int n) {
 		
@@ -68,7 +65,7 @@ public class GTTransport {
 				slackBA[j][i] = CBA[j][i] + 1 - dualWeights[i] - dualWeights[j + n];
 			}
 		}
-		
+		//line 88 in GTTransport.m
 		while(3 != n) {// main phase loop with bogus argument 
 			
 			
@@ -141,9 +138,18 @@ public class GTTransport {
 				}
 			}
 		}
+		double[][] capacity = new double[2*n][2*n];
+		double[][] ab = transpose(capacityAB);
+		double[][] ba = transpose(capacityBA);
 		
+		for(int i = 0; i < n; i++) {
+			for(int j = 0; j < n; j++) {
+				capacity[n + i][j] = ab[i][j];
+				capacity[i][j + n] = ba[i][j];
+			}
+		}
 		
-		return null;
+		return capacity; //GTTransport.m line 318
 	}
 	
 	public static double[][] transpose(double[][] matrix){
