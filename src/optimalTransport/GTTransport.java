@@ -10,7 +10,7 @@ public class GTTransport {
 	//private static int[] bFree;
 	//private static int[] aFree;
 	
-	public static double[][] Transport(double[][] C, double[] supplies, double[] demands, int n) {
+	public double[][] Transport(double[][] C, double[] supplies, double[] demands, int n) {
 		
 		double sSum = 0;
 		double dSum = 0;
@@ -61,11 +61,84 @@ public class GTTransport {
 		double[][] slackAB = new double[n][n];
 		double[][] slackBA = new double[n][n];
 		vertexVisited = new int[2*n];
-		double[] augmentingPathVertices = new double[2*n];
+		int[] augmentingPathVertices = new int[2*n];
 		for(int i = 0; i < n; i++) {
 			for(int j = 0; i < n; i++) {
 				slackAB[j][i] = dualWeights[i + n] + dualWeights[j] - CAB[j][i];
 				slackBA[j][i] = CBA[j][i] + 1 - dualWeights[i] - dualWeights[j + n];
+			}
+		}
+		
+		while(3 != n) {// main phase loop with bogus argument 
+			
+			
+			//GTTransport.m line 213:
+			
+			for(int vertex = 1; vertex < n; vertex++) {
+				if(bFree[vertex] == 1) {
+					
+					while(deficiencyB[vertex] > 0 && vertexVisited[vertex] < 2*n) {
+						augmentingPathVertices = DFSUtil(vertex, augmentingPathVertices, n, slackAB, slackBA, aFree, capacityAB, capacityBA);
+						
+						if(AugPathVerIndex <= 0) {
+							break;
+						}
+						else {
+							
+							double val = Math.min(deficiencyB[augmentingPathVertices[0]], deficiencyA[augmentingPathVertices[AugPathVerIndex] - n]);
+							for(int j = 0; j < AugPathVerIndex; j++) {
+								int vertex1 = augmentingPathVertices[j];
+								int vertex2 = augmentingPathVertices[j + 1];
+								
+								if(vertex1 > n) {
+									val = Math.min(val, capacityAB[vertex2][vertex1 - n]);
+									
+								}
+								else {
+									val = Math.min(val, capacityBA[vertex2 - n][vertex1]);
+								}
+							}
+							
+							for(int j = 0; j < AugPathVerIndex; j++) {
+								int vertex1 = augmentingPathVertices[j];
+								int vertex2 = augmentingPathVertices[j + 1];
+								
+								if(vertex1 > n) {
+									capacityAB[vertex2] [vertex1 - n] = capacityAB[vertex2] [vertex1 - n] - val;
+	                                capacityBA[vertex1 - n][ vertex2] = capacityBA[vertex1 - n] [vertex2] + val;
+	                                if(capacityAB[vertex2][ vertex1 - n] > 0) {
+                                    
+	                                	vertexVisited[vertex1] = vertex2 - 1; 
+	                                }
+	                                
+								}
+								else {
+									capacityBA[vertex2 - n][ vertex1] = capacityBA[vertex2 - n][ vertex1] - val;
+	                                capacityAB[vertex1][ vertex2 - n] = capacityAB[vertex1][ vertex2 - n] + val;
+	                                
+	                                if(capacityBA[vertex2 - n] [vertex1] > 0) {
+                                    
+	                                	vertexVisited[vertex1] = vertex2 - 1; 
+	                                }
+								}
+							}
+							
+							//update deficiencies 
+							
+							deficiencyB[vertex] = deficiencyB[vertex] - val;
+	                        if(deficiencyB[vertex] == 0) {
+	                            bFree[vertex] = 0;
+	                        }
+	                        
+	                        int last = augmentingPathVertices[AugPathVerIndex] - n;
+	                        deficiencyA[last] = deficiencyA[last] - val;
+	                        if(deficiencyA[last] == 0){
+	                            aFree[last] = 0;
+	                        }
+						}
+						
+					}
+				}
 			}
 		}
 		
@@ -84,7 +157,7 @@ public class GTTransport {
 		return t;
 	}
 	
-	//public int augPathVer
+	//returns augmentingPathVertices, with vertexVisited & augPathVerIndex as globals
 	public int[] DFSUtil(int vertex, int[] augmentingPathVertices, int n, double[][] slackAB, double[][] slackBA, int[] aFree, double[][] capacityAB, double[][] capacityBA ){
 		AugPathVerIndex = 0;
 		augmentingPathVertices[AugPathVerIndex] = vertex;
