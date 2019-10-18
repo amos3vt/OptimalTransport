@@ -1,6 +1,9 @@
 package optimalTransport;
 
-import java.util.Arrays;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 
 public class OptimalTransport {
     int n; // number of supply vertices ( == number of demand vertices)
@@ -27,6 +30,7 @@ public class OptimalTransport {
      * @param n Number of supply vertices (equals number of demand vertices)
      */
     public OptimalTransport(int n, double[] deficiencyA, double[] deficiencyB, double[][] CAB) {
+    	
         // assert sum(supplies) <= sum(demands)
         iterations = 0;
         APLengths = 0;
@@ -64,9 +68,10 @@ public class OptimalTransport {
     /**
      * Computes the optimal transport
      */
-    public void compute() {
+    private void compute() {
         while (anyFree(BFree)) {
             iterations++;
+            int f = 2;
             double[] lv = new double[2*n];
             boolean[] shortestpathset = new boolean[2*n];
             for (int i = 0; i < n; i++) {
@@ -99,10 +104,6 @@ public class OptimalTransport {
         double distAF = dijkstra(lv, shortestpathset); // min distance to a free vertex
         updateDualWeights(lv, distAF);
         updateSlacks();
-        
-        for(int i = 0; i < n; i++) {
-        	vertexVisited[i] = n;
-        }
         DFS();
     }
     
@@ -139,9 +140,9 @@ public class OptimalTransport {
     
     private int dijkstraMinIndex(double[] lv, boolean[] shortestpathset) {
         double minValue = Double.POSITIVE_INFINITY;
-        int minIndex = 0;
+        int minIndex = -1;
         for (int i = 0; i < n*2; i++) {
-            if (lv[i] < minValue && !shortestpathset[i]) { //
+            if (lv[i] < minValue && !shortestpathset[i]) {
                 minValue = lv[i];
                 minIndex = i;
             }
@@ -172,34 +173,13 @@ public class OptimalTransport {
         }
     }
     
-    private void getCapacities() {/*
+    private void getCapacities() {
         capacity = new double[2*n][2*n];
         for (int i = 0; i < n; i++) {
-            capacity[n+i][i] = capacityAB[i][i];
-            capacity[i][n+i] = capacityBA[i][i];
-        }*/
-    	capacity = new double[2*n][2*n];
-		///double[][] ab = transpose(capacityAB);
-		//double[][] ba = transpose(capacityBA);
-		
-		for(int i = 0; i < n; i++) {
-			for(int j = 0; j < n; j++) {
-				capacity[n + i][j] = capacityAB[j][i];
-				capacity[i][j + n] = capacityBA[j][i];
-			}
-		}
+            capacity[n+i][i] = capacityAB[i][n+i];
+            capacity[i][n+i] = capacityBA[n+i][i];
+        }
     }
-    
-	public static double[][] transpose(double[][] matrix){
-		double[][] t = new double[matrix.length][matrix[0].length];
-		
-		for(int i = 0; i < matrix.length; i++) {
-			for(int j = 0; j < matrix[0].length; j++) {
-				t[j][i] = matrix[i][j];
-			}
-		}
-		return t;
-	}
     
     private void DFS() {
         for(int vertex = 1; vertex < n; vertex++) {
@@ -255,18 +235,15 @@ public class OptimalTransport {
     }
     
     private int DFSUtil(int vertex) {
-    	//System.out.println("v = " + vertex);
         int AugPathVerIndex = 0;
         augmentingPathVertices[AugPathVerIndex] = vertex;
         while(AugPathVerIndex >= 0) {
             vertex = augmentingPathVertices[AugPathVerIndex];     
             if(vertex > n && AFree[vertex - n]) { // THERE MAY BE AN ISSUE WITH THIS CONDITION
                                                             // LOOK HERE WHEN IT DOESN'T WORK
-               
-            	return AugPathVerIndex;
+                return AugPathVerIndex;
             }
             boolean backtrack = true;
-            //System.out.println(Arrays.toString(vertexVisited));
             int range_var1 = vertexVisited[vertex]+1; //this +1 may be wrong too
             int range_var2 = 0;
             
@@ -279,11 +256,7 @@ public class OptimalTransport {
             for(int i = range_var1; i <= range_var2; i++) {
                 vertexVisited[vertex] = i;   
                 if(vertex < n) {
-                    int a = i - n - 1;
-                    //System.out.println(range_var1);
-                    if(vertex >= n) {
-                    	System.out.println(i);
-                    }
+                    int a = i - n;
                     if(slackBA[a][vertex] == 0 && capacityBA[a][vertex] > 0) {
                         backtrack = false;
                         augmentingPathVertices[++AugPathVerIndex] = i;
