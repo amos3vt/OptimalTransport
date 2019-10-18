@@ -1,7 +1,8 @@
 package optimalTransport;
 
-
-
+import java.io.File; 
+import java.io.FileNotFoundException; 
+import java.util.Scanner;
 
 public class OptimalTransport {
     int n; // number of supply vertices ( == number of demand vertices)
@@ -27,14 +28,13 @@ public class OptimalTransport {
      * Constructor sets up all initial values
      * @param n Number of supply vertices (equals number of demand vertices)
      */
-    public OptimalTransport(int n, double[] deficiencyA, double[] deficiencyB, double[][] CAB) {
-        // assert sum(supplies) <= sum(demands)
+    public OptimalTransport(int n, String deficiencyAFile, String deficiencyBFile, String fileCost) throws FileNotFoundException {
         iterations = 0;
         APLengths = 0;
         this.n = n;
-        this.deficiencyA = deficiencyA;
-        this.deficiencyB = deficiencyB;
-        this.CAB = CAB;
+        this.deficiencyA = loadArray(n, deficiencyAFile);
+        this.deficiencyB = loadArray(n, deficiencyBFile);
+        this.CAB = loadMatrix(n, costFile);
         AFree = new boolean[n];
         BFree = new boolean[n];
         CBA = new double[n][n];
@@ -60,6 +60,32 @@ public class OptimalTransport {
                 slackBA[j][i-n] = CBA[j][i-n] + 1 - dualWeights[i-n] - dualWeights[j+n];
             }
         }
+    }
+    
+    private double[][] loadMatrix(int n, String filename) throws FileNotFoundException {
+        double[][] matrix = new double[n][n];
+        File file = new File(filename);
+        Scanner scanner = new Scanner(file);
+        scanner.useDelimiter(",");
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                matrix[i][j] = scanner.nextDouble();
+            }
+        }
+        scanner.close();
+        return matrix;
+    }
+    
+    private double[] loadArray(int n, String filename) throws FileNotFoundException {
+        double[] array = new double[n];
+        File file = new File(filename);
+        Scanner scanner = new Scanner(file);
+        for (int i = 0; i < n; i++) {
+            array[i] = scanner.nextInt();
+            scanner.nextLine();
+        }
+        scanner.close();
+        return array;
     }
     
     /**
