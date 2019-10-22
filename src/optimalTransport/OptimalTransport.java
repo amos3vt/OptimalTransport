@@ -16,7 +16,7 @@ public class OptimalTransport {
     double[][] capacityAB;
     double[][] capacityBA;
     int[][] CAB;
-    double[][] CBA;
+    int[][] CBA;
     int[] vertexVisited;
     double[][] slackAB;
     double[][] slackBA;
@@ -60,7 +60,8 @@ public class OptimalTransport {
         	AFree[i] = true;
         	BFree[i] = true;
         }
-        CBA = new double[n][n];
+        CBA = transpose(CAB);
+        
         slackAB = new double[n][n];
         slackBA = new double[n][n];
         capacityAB = new double[n][n];
@@ -75,18 +76,35 @@ public class OptimalTransport {
             for (int j = 0; j < n; j++) {
             	//System.out.println("Hello?");
                 capacityAB[j][i] = Math.min(deficiencyB[j], deficiencyA[i]);
-                CBA[j][i] = CAB[i][j];
+                //CBA[j][i] = CAB[i][j];
             }
         }
-        for (int i = n; i < 2*n; i++) {
+        /*for (int i = n; i < 2*n; i++) {
             for (int j = 0; j < n; j++) {
                 slackAB[j][i-n] = dualWeights[i] + dualWeights[j] - CAB[j][i-n];
                 slackBA[j][i-n] = CBA[j][i-n] + 1 - dualWeights[i-n] - dualWeights[j+n];
+            	
             }
+        }*/
+        for(int i = 0; i < n; i++) {
+        	for(int j = 0; j < n; j++) {
+        		slackAB[j][i] = -1*CAB[j][i];
+        		slackBA[j][i] = CBA[j][i] +1;
+        	}
         }
         //System.out.println("Setup COmplete");
     }
     
+    public static int[][] transpose(int[][] matrix){
+		int[][] t = new int[matrix.length][matrix[0].length];
+		
+		for(int i = 0; i < matrix.length; i++) {
+			for(int j = 0; j < matrix[0].length; j++) {
+				t[j][i] = matrix[i][j];
+			}
+		}
+		return t;
+	}
     private int[][] loadMatrix(int n, String filename) throws FileNotFoundException {
         int[][] matrix = new int[n][n];
         File file = new File(filename);
