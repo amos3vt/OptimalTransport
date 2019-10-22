@@ -1,9 +1,8 @@
 package optimalTransport;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.io.File; 
+import java.io.FileNotFoundException; 
+import java.util.Scanner;
 
 public class OptimalTransport {
     int n; // number of supply vertices ( == number of demand vertices)
@@ -16,7 +15,7 @@ public class OptimalTransport {
     double[] dualWeights;
     double[][] capacityAB;
     double[][] capacityBA;
-    double[][] CAB;
+    int[][] CAB;
     double[][] CBA;
     int[] vertexVisited;
     double[][] slackAB;
@@ -24,22 +23,43 @@ public class OptimalTransport {
     int[] augmentingPathVertices;
     double[][] capacity;
     
+    
+    
+    public static void main(String args[]) {
+    	
+    	try {
+			OptimalTransport o = new OptimalTransport(Integer.parseInt(args[0]), args[1], args[2], args[3]);
+			o.compute();
+		} catch (NumberFormatException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		
+		}
+    	
+    	
+    }
     /**
      * Performs Gabow-Tarjan optimal transport
      * Constructor sets up all initial values
      * @param n Number of supply vertices (equals number of demand vertices)
      */
-    public OptimalTransport(int n, double[] deficiencyA, double[] deficiencyB, double[][] CAB) {
-    	
-        // assert sum(supplies) <= sum(demands)
+    public OptimalTransport(int n, String deficiencyBFile, String deficiencyAFile, String fileCost) throws FileNotFoundException {
+    	System.out.println("GO");
         iterations = 0;
         APLengths = 0;
         this.n = n;
-        this.deficiencyA = deficiencyA;
-        this.deficiencyB = deficiencyB;
-        this.CAB = CAB;
+        this.deficiencyA = loadArray(n, deficiencyAFile);
+        this.deficiencyB = loadArray(n, deficiencyBFile);
+        this.CAB = loadMatrix(n, fileCost);
         AFree = new boolean[n];
         BFree = new boolean[n];
+        for(int i = 0; i < n; i++) {
+        	AFree[i] = true;
+        	BFree[i] = true;
+        }
         CBA = new double[n][n];
         slackAB = new double[n][n];
         slackBA = new double[n][n];
@@ -49,10 +69,11 @@ public class OptimalTransport {
         vertexVisited = new int[2*n];
         augmentingPathVertices = new int[2*n];
         for (int i = 0; i < n; i++) {
-            if (deficiencyA[i] != 0) { AFree[i] = true; }
-            if (deficiencyB[i] != 0) { BFree[i] = true; }
+            if (deficiencyA[i] == 0.0) { AFree[i] = false; }
+            if (deficiencyB[i] == 0.0) { BFree[i] = false; }
             augmentingPathVertices[i] = -1;
             for (int j = 0; j < n; j++) {
+            	//System.out.println("Hello?");
                 capacityAB[j][i] = Math.min(deficiencyB[j], deficiencyA[i]);
                 CBA[j][i] = CAB[i][j];
             }
@@ -63,6 +84,41 @@ public class OptimalTransport {
                 slackBA[j][i-n] = CBA[j][i-n] + 1 - dualWeights[i-n] - dualWeights[j+n];
             }
         }
+        //System.out.println("Setup COmplete");
+    }
+    
+    private int[][] loadMatrix(int n, String filename) throws FileNotFoundException {
+        int[][] matrix = new int[n][n];
+        File file = new File(filename);
+        Scanner scanner = new Scanner(file);
+        //scanner.useDelimiter(" ");
+        for (int i = 0; i < n; i++) {
+        	//System.out.println("Loading matrix " + i);
+            for (int j = 0; j < n; j++) {
+            	
+            	//if(scanner.hasNextInt()) {
+            		//System.out.println("d");
+            		matrix[i][j] = scanner.nextInt();
+            	//System.out.println(scanner.nextLine());
+            	//}
+            }
+        }
+        scanner.close();
+        return matrix;
+    }
+    
+    private double[] loadArray(int n, String filename) throws FileNotFoundException {
+        double[] array = new double[n];
+        File file = new File(filename);
+        Scanner scanner = new Scanner(file);
+        
+        for (int i = 0; i < n; i++) {
+            array[i] = scanner.nextInt();
+            //System.out.println("loading array");
+            if(scanner.hasNextLine())scanner.nextLine();
+        }
+        scanner.close();
+        return array;
     }
     
     /**
@@ -70,8 +126,8 @@ public class OptimalTransport {
      */
     private void compute() {
         while (anyFree(BFree)) {
+        	//System.out.println("main phase");
             iterations++;
-            int f = 2;
             double[] lv = new double[2*n];
             boolean[] shortestpathset = new boolean[2*n];
             for (int i = 0; i < n; i++) {
@@ -140,7 +196,7 @@ public class OptimalTransport {
     
     private int dijkstraMinIndex(double[] lv, boolean[] shortestpathset) {
         double minValue = Double.POSITIVE_INFINITY;
-        int minIndex = -1;
+        int minIndex = 0;//was -1
         for (int i = 0; i < n*2; i++) {
             if (lv[i] < minValue && !shortestpathset[i]) {
                 minValue = lv[i];
@@ -175,13 +231,22 @@ public class OptimalTransport {
     
     private void getCapacities() {
         capacity = new double[2*n][2*n];
-        for (int i = 0; i < n; i++) {
-            capacity[n+i][i] = capacityAB[i][n+i];
-            capacity[i][n+i] = capacityBA[n+i][i];
-        }
+        for(int i = 0; i < n; i++) {
+			for(int j = 0; j < n; j++) {
+				capacity[n + i][j] = capacityAB[j][i];
+				capacity[i][j + n] = capacityBA[j][i];
+			}
+		}
     }
     
     private void DFS() {
+    	
+    	for(int i = 0; i < n; i++) {
+    		vertexVisited[i] = n;
+    	}
+    	for(int i = n; i < 2*n; i++) {
+    		vertexVisited[i] = 0;
+    	}
         for(int vertex = 1; vertex < n; vertex++) {
             if(BFree[vertex]) {
                 while(deficiencyB[vertex] > 0 && vertexVisited[vertex] < 2*n) {
@@ -235,28 +300,33 @@ public class OptimalTransport {
     }
     
     private int DFSUtil(int vertex) {
+    	//System.out.println("DFSUTIL " + vertex);
         int AugPathVerIndex = 0;
         augmentingPathVertices[AugPathVerIndex] = vertex;
         while(AugPathVerIndex >= 0) {
             vertex = augmentingPathVertices[AugPathVerIndex];     
-            if(vertex > n && AFree[vertex - n]) { // THERE MAY BE AN ISSUE WITH THIS CONDITION
+            if(vertex > n && AFree[vertex - n - 1]) { // THERE MAY BE AN ISSUE WITH THIS CONDITION
                                                             // LOOK HERE WHEN IT DOESN'T WORK
-                return AugPathVerIndex;
+                System.out.println("!!!!augpathverindex = " + AugPathVerIndex);
+            	return AugPathVerIndex;
+                
             }
             boolean backtrack = true;
-            int range_var1 = vertexVisited[vertex]+1; //this +1 may be wrong too
+            int range_var1 = vertexVisited[vertex] + 1;//this +1 may be wrong too
             int range_var2 = 0;
             
-            if(vertex < n) {
+            if(vertex <= n) {//
                 range_var2 = 2*n;
             }
             else {
                 range_var2 = n;
             }         
-            for(int i = range_var1; i <= range_var2; i++) {
+            for(int i = range_var1; i < range_var2; i++) {
                 vertexVisited[vertex] = i;   
                 if(vertex < n) {
-                    int a = i - n;
+                    int a = i - n -1;
+                    if(a == 146 && vertex == 202)
+                    System.out.println("slackba " + slackBA[a][vertex]);
                     if(slackBA[a][vertex] == 0 && capacityBA[a][vertex] > 0) {
                         backtrack = false;
                         augmentingPathVertices[++AugPathVerIndex] = i;
@@ -277,6 +347,7 @@ public class OptimalTransport {
             }
             
         }
+        //System.out.println("augpathverindex = " + AugPathVerIndex);
         return AugPathVerIndex;
     }
     
