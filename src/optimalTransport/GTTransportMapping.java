@@ -1,7 +1,7 @@
 package optimalTransport;
 
-public class GTTransportMapping {
-	// This function implements the mapping for the 1-feasibility
+public class GTTransportMapping {}
+	/*// This function implements the mapping for the 1-feasibility
 	// implementation of the Gabow-Tarjan transportation algorithm, which
 	// acts on integral supplies, demands, and costs.
 	// This function calls the GTTransport function with the appropriate
@@ -114,4 +114,4 @@ public class GTTransportMapping {
 	    assert(abs(capacity_fulfilled - 1) <= tolerance);
 	    GTTransport_time = toc(GTTransport_time);
 	end
-}
+}*/
