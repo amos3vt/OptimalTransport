@@ -4,13 +4,6 @@ import java.io.File;
 import java.io.FileNotFoundException; 
 import java.util.Scanner;
 
-// Make small test case
-// Try with all supplies and demands as 1
-
-// for arrays of length 2*n
-// 0 to n-1 for B
-// n to 2n-1 for A
-
 public class OptimalTransport {
 	int iterations;
 	int n; // number of supply vertices (== number of demand vertices)
@@ -36,6 +29,26 @@ public class OptimalTransport {
 		deficiencyB = loadArray(fileDeficiencyB);
 		deficiencyA = loadArray(fileDeficiencyA);
 		CAB = loadMatrix(fileCost);
+		CBA = transpose(CAB);
+		BFree = setFree(deficiencyB);
+		AFree = setFree(deficiencyA);
+		dualWeights = new double[2*n];
+		capacityAB = new double[n][n];
+		capacityBA = setCapacityBA();
+		slackAB = new double[n][n];
+		slackBA = new double[n][n];
+		setSlacks();
+		augmentingPathVertices = setAugmentingPathVertices();
+		compute();
+		capacity = formatCapacity();
+	}
+	public OptimalTransport(int n, double[] fileDeficiencyB, double[] fileDeficiencyA, double[][] fileCost) throws FileNotFoundException {
+		this.n = n;
+		iterations = 0;
+		APLengths = 0;
+		deficiencyB = (fileDeficiencyB);
+		deficiencyA = (fileDeficiencyA);
+		CAB = (fileCost);
 		CBA = transpose(CAB);
 		BFree = setFree(deficiencyB);
 		AFree = setFree(deficiencyA);
@@ -224,7 +237,7 @@ public class OptimalTransport {
 					int AugPathVerIndex = DFSUtil(vertex, vertexVisited);
 					if (AugPathVerIndex < 0) { break; } // no augmenting path found
 					APLengths += AugPathVerIndex;
-					double val = Math.min(deficiencyB[augmentingPathVertices[0]], deficiencyA[augmentingPathVertices[AugPathVerIndex]-n]);
+					double val = Math.min(deficiencyB[augmentingPathVertices[0]], deficiencyA[augmentingPathVertices[AugPathVerIndex]-n]); // +1 or no?
 					for (int j = 0; j < AugPathVerIndex; j++) {
 						int vertex1 = augmentingPathVertices[j];
 						int vertex2 = augmentingPathVertices[j+1];
@@ -285,16 +298,16 @@ public class OptimalTransport {
 						backtrack = false;
 						AugPathVerIndex = AugPathVerIndex + 1;
 						augmentingPathVertices[AugPathVerIndex] = i;
-						return AugPathVerIndex;
+						break;
 					}
 				}
 				else { // vertex type A
-					int a = vertex - n + 1;
+					int a = vertex - n; // LOOK HERE, PLUS ONE?
 					if (slackAB[i][a] == 0 && capacityAB[i][a] > 0) {
 						backtrack = false;
 						AugPathVerIndex++;
 						augmentingPathVertices[AugPathVerIndex] = i;
-						return AugPathVerIndex;
+						break;
 					}
 				}
 			}

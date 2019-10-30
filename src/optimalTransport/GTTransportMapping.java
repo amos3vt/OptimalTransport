@@ -1,5 +1,9 @@
 package optimalTransport;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Scanner;
+
 public class GTTransportMapping {
 	// This function implements the mapping for the 1-feasibility
 	// implementation of the Gabow-Tarjan transportation algorithm, which
@@ -9,15 +13,59 @@ public class GTTransportMapping {
 	// supplies and demands not computed by GTTransport.
 
 
-	public GTTransportMapping(int n, double[] supplies, double[] demands, double[][] cost, double delta) {
+	
+	public static void main(String args[]) {
+		int n = Integer.parseInt(args[0]);
+		double delta = Double.parseDouble(args[4]);
+		
+		try {
+			double[] supplies = loadArray(args[1], n);
+			double[] demands = loadArray(args[2], n);
+			double[][] costs = loadMatrix(args[3], n);
+			mapping(n, supplies, demands, costs, delta);
+		} catch (FileNotFoundException e) {
+			
+			e.printStackTrace();
+		} //a
+		
+		
+	}
+	private static double[][] loadMatrix(String filename, int n) throws FileNotFoundException {
+		double[][] matrix = new double[n][n];
+		File file = new File(filename);
+		Scanner scanner = new Scanner(file);
+		for (int i = 0; i < n; i++) {
+			for (int j = 0; j < n; j++) {
+				matrix[i][j] = scanner.nextDouble();
+			}
+		}
+		scanner.close();
+		return matrix;
+	}
+	private static double[] loadArray(String filename, int n) throws FileNotFoundException {
+		double[] array = new double[n];
+		File file = new File(filename);
+		Scanner scanner = new Scanner(file);
+		for (int i = 0; i < n; i++) {
+			array[i] = scanner.nextDouble();
+		}
+		scanner.close();
+		return array;
+	}
+	public static void mapping(int n, double[] supplies, double[] demands, double[][] cost, double delta) {
 		double maxC = max(cost);
-		int[][] newCost = mapCost(cost, delta);
-		int[] newSupplies = mapSupplies(supplies, delta);
-		int[] newDemands = mapDemands(demands, delta);
+		double[][] newCost = mapCost(cost, delta);
+		double[] newSupplies = mapSupplies(supplies, n, maxC, delta);
+		double[] newDemands = mapDemands(demands, n, maxC, delta);
 		
 		
 		OptimalTransport otObj = null;
-		//otObj = new OptimalTransport(n, newSupplies, newDemands, newCost);
+		try {
+			otObj = new OptimalTransport(n, newSupplies, newDemands, newCost);
+		} catch (FileNotFoundException e) {
+			
+			e.printStackTrace();
+		}
 		//otObj.compute();
 		double[][] capacity = otObj.capacity;
 		
@@ -72,7 +120,7 @@ public class GTTransportMapping {
 		
 		
 		for(int i = 0; i < n; i++) {
-			for(int j = n; n < n * 2; j++) {
+			for(int j = n; j < n * 2; j++) {
 				capacity[j][i] += greedyCapacity[i][j-n]; 
 			}
 		}
@@ -146,8 +194,8 @@ public class GTTransportMapping {
 	
 	public static void original(double[][] arr, int n, double maxC, double delta) {
 		double denom = 4 * n * maxC;
-		for(int i = 0; i < n; i++) {
-			for(int j = 0; j < n; j++) {
+		for(int i = 0; i < arr.length; i++) {
+			for(int j = 0; j < arr[0].length; j++) {
 				if(arr[i][j] != 0.0) {
 					arr[i][j] = ((arr[i][j] * delta) / denom);
 				}
@@ -155,10 +203,10 @@ public class GTTransportMapping {
 		}
 	}
 	
-	public static int[] mapDemands(double[] dem, double delta) {
-		int[] newDem = new int[dem.length];
+	public static double[] mapDemands(double[] dem, int n, double maxC, double delta) {
+		double[] newDem = new double[dem.length];
 		for(int i = 0; i< dem.length; i++) {
-			double temp = 4 * dem[i] / delta;
+			double temp = 4 * n * maxC * dem[i] / delta;
 			if(temp % 1 == 0) newDem[i] = (int) temp;
 			else newDem[i] = ((int) temp) + 1;
 		}
@@ -166,18 +214,19 @@ public class GTTransportMapping {
 		
 	}
 	
-	public static int[] mapSupplies(double[] supp, double delta) {
-		int[] newSupp = new int[supp.length];
+	public static double[] mapSupplies(double[] supp, int n, double maxC, double delta) {
+		double[] newSupp = new double[supp.length];
 		for(int i = 0; i < supp.length; i++) {
-			double temp = 4 * supp[i] / delta;
+			double temp = 4 * n * maxC *supp[i] / delta;
+			//double temp = 
 			newSupp[i] = (int) temp;
 		}
 		return newSupp;
 	}
 	
 	
-	public static int[][] mapCost(double[][] cost, double delta) {
-		int[][] nCost = new int[cost.length][cost[0].length];
+	public static double[][] mapCost(double[][] cost, double delta) {
+		double[][] nCost = new double[cost.length][cost[0].length];
 		for(int i = 0; i < cost.length; i++) {
 			for(int j = 0; j < cost[0].length; j++) {
 				double temp = 4 * cost[i][j] / delta;

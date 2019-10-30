@@ -43,7 +43,7 @@ public class greedyMatch {
 				greedyCapacity[i][id2] = units;
 				gSupplies[i] = gSupplies[i] - units;
 				gDemands[id2] = gDemands[id2] - units;
-				CostGreedy[i][id2] = Double.POSITIVE_INFINITY;
+				//CostGreedy[i][id2] = Double.POSITIVE_INFINITY;
 				j++;
 			}
 		}
