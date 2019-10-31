@@ -44,7 +44,7 @@ public class GTTransportMapping {
 				matrix[i][j] = scanner.nextDouble();
 			}
 		}
-		scanner.close();
+		scanner.close();//Does file need to be closed too?
 		return matrix;
 	}
 	private static double[] loadArray(String filename, int n) throws FileNotFoundException {
@@ -54,7 +54,7 @@ public class GTTransportMapping {
 		for (int i = 0; i < n; i++) {
 			array[i] = scanner.nextDouble();
 		}
-		scanner.close();
+		scanner.close();//Does file need to be closed too?
 		return array;
 	}
 	public static void mapping(int n, double[] supplies, double[] demands, double[][] cost, double delta) {
