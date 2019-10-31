@@ -19,10 +19,15 @@ public class GTTransportMapping {
 		double delta = Double.parseDouble(args[4]);
 		
 		try {
+			long time = System.currentTimeMillis();
 			double[] supplies = loadArray(args[1], n);
 			double[] demands = loadArray(args[2], n);
 			double[][] costs = loadMatrix(args[3], n);
+			long time1 = System.currentTimeMillis();
+			System.out.println("Load File time = " + (System.currentTimeMillis() - time));
 			mapping(n, supplies, demands, costs, delta);
+			long time2 = System.currentTimeMillis();
+			System.out.println("Total Time = " + (time2 - time) + " (" + (time2 - time1 + ")"));
 		} catch (FileNotFoundException e) {
 			
 			e.printStackTrace();

@@ -48,7 +48,7 @@ public class greedyMatch {
 			}
 		}
 		
-		System.out.println(System.currentTimeMillis() - time);
+		//System.out.println(System.currentTimeMillis() - time);
 		return greedyCapacity;
 	}
 	
