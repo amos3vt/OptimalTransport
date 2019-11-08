@@ -108,9 +108,9 @@ public class OptimalTransport {
 	
 	private double[][] setCapacityBA() {
 		double[][] capacity = new double[n][n];
-		for (int j = 0; j < n; j++) {
-			for (int i = 0; i < n; i++) {
-				capacity[i][j] = Math.min(deficiencyB[j], deficiencyA[i]);
+		for (int i = 0; i < n; i++) {
+			for (int j = 0; j < n; j++) {
+				capacity[i][j] = Math.min(deficiencyB[i], deficiencyA[j]);
 			}
 		}
 		return capacity;
@@ -171,7 +171,7 @@ public class OptimalTransport {
 			shortestpathset[minIndex] = true;
 			if (minIndex < n) { // vertex of type B added to shortest path tree
 				for (int j = 0; j < n; j++) {
-					if (capacityBA[j][minIndex] > 0) {
+					if (capacityBA[minIndex][j] > 0) {
 						double slack = slackBA[j][minIndex];
 						if (lv[j+n] > lv[minIndex] + slack) {
 							lv[j+n] = lv[minIndex] + slack;
@@ -181,9 +181,10 @@ public class OptimalTransport {
 			} 
 			else {
 				int a = minIndex - n;
+				
 				if (AFree[a]) { return lv[minIndex]; }
 				for (int b = 0; b < n; b++) {
-					if (capacityAB[b][a] > 0) {
+					if (capacityAB[a][b] > 0) {
 						double slack = slackAB[b][a];
 						if (lv[b] > lv[minIndex] + slack) {
 							lv[b] = lv[minIndex] + slack;
@@ -220,11 +221,13 @@ public class OptimalTransport {
 		}
 	}
 	
-	private void updateSlacks() {
+	private void updateSlacks() {//invert i & j
 		for (int i = 0; i < n; i++) {
 			for (int j = 0; j < n; j++) {
-				slackAB[j][i] = dualWeights[i+n] + dualWeights[j] - CAB[j][i];
-				slackBA[j][i] = CBA[j][i] + 1 - dualWeights[i] - dualWeights[j+n];
+				//slackAB[j][i] = dualWeights[i+n] + dualWeights[j] - CAB[j][i]; //old
+				//slackBA[j][i] = CBA[j][i] + 1 - dualWeights[i] - dualWeights[j+n];
+				slackAB[i][j] = dualWeights[j+n] + dualWeights[i] - CAB[i][j];
+				slackBA[i][j] = CBA[i][j] + 1 - dualWeights[j] - dualWeights[i + n];
 			}
 		}
 	}
@@ -241,23 +244,23 @@ public class OptimalTransport {
 					for (int j = 0; j < AugPathVerIndex; j++) {
 						int vertex1 = augmentingPathVertices[j];
 						int vertex2 = augmentingPathVertices[j+1];
-						if (vertex1 >= n) { val = Math.min(val, capacityAB[vertex2][vertex1-n]); }
-						else { val = Math.min(val,  capacityBA[vertex2-n][vertex1]); }
+						if (vertex1 >= n) { val = Math.min(val, capacityAB[vertex1-n][vertex2]); }
+						else { val = Math.min(val,  capacityBA[vertex1][vertex2-n]); }
 					}
 					for (int j = 0; j < AugPathVerIndex; j++) {
 						int vertex1 = augmentingPathVertices[j];
 						int vertex2 = augmentingPathVertices[j+1];
 						if (vertex1 >= n) {
-							capacityAB[vertex2][vertex1 - n] = capacityAB[vertex2][vertex1 - n] - val;
-							capacityBA[vertex1 - n][vertex2] = capacityBA[vertex1 - n][vertex2] + val;
-							if (capacityAB[vertex2][vertex1 - n] > 0) {
+							capacityAB[vertex1 - n][vertex2] -= val;
+							capacityBA[vertex2][vertex1 - n] += val;
+							if (capacityAB[vertex1 - n][vertex2] > 0) {
 								vertexVisited[vertex1] = vertex2 - 1;
 							}
 						}
 						else {
-							capacityBA[vertex2-n][vertex1] = capacityBA[vertex2-n][vertex1] - val;
-							capacityAB[vertex1][vertex2-n] = capacityAB[vertex1][vertex2-n] + val;
-							if (capacityBA[vertex2-n][vertex1] > 0) {
+							capacityBA[vertex1][vertex2-n] -= val;
+							capacityAB[vertex2-n][vertex1] += val;
+							if (capacityBA[vertex1][vertex2-n] > 0) {
 								vertexVisited[vertex1] = vertex2 - 1;
 							}
 						}
@@ -294,7 +297,7 @@ public class OptimalTransport {
 				vertexVisited[vertex] = i;
 				if (vertex < n) { // vertex type B
 					int a = i - n;
-					if (slackBA[a][vertex] == 0 && capacityBA[a][vertex] > 0) {
+					if (slackBA[a][vertex] == 0 && capacityBA[vertex][a] > 0) {
 						backtrack = false;
 						AugPathVerIndex = AugPathVerIndex + 1;
 						augmentingPathVertices[AugPathVerIndex] = i;
@@ -303,7 +306,7 @@ public class OptimalTransport {
 				}
 				else { // vertex type A
 					int a = vertex - n; // LOOK HERE, PLUS ONE?
-					if (slackAB[i][a] == 0 && capacityAB[i][a] > 0) {
+					if (slackAB[i][a] == 0 && capacityAB[a][i] > 0) {//This capacity inversion may slow it a bit
 						backtrack = false;
 						AugPathVerIndex++;
 						augmentingPathVertices[AugPathVerIndex] = i;
@@ -323,8 +326,8 @@ public class OptimalTransport {
 		double[][] capacity = new double[2*n][2*n];
 		for (int i = 0; i < n; i++) {
 			for (int j = 0; j < n; j++) {
-				capacity[i+n][j] = capacityAB[j][i];
-				capacity[i][j+n] = capacityBA[j][i];
+				capacity[i+n][j] = capacityAB[i][j];
+				capacity[i][j+n] = capacityBA[i][j];
 			}
 		}
 		return capacity;
