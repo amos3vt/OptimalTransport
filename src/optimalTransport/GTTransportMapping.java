@@ -17,7 +17,6 @@ public class GTTransportMapping {
 	public static void main(String args[]) {
 		int n = Integer.parseInt(args[0]);
 		double delta = Double.parseDouble(args[4]);
-		
 		try {
 			long time = System.currentTimeMillis();
 			double[] supplies = loadArray(args[1], n);
@@ -28,13 +27,14 @@ public class GTTransportMapping {
 			mapping(n, supplies, demands, costs, delta);
 			long time2 = System.currentTimeMillis();
 			System.out.println("Total Time = " + (time2 - time) + " (" + (time2 - time1 + ")"));
-		} catch (FileNotFoundException e) {
-			
+		} catch (FileNotFoundException e) {		
 			e.printStackTrace();
-		} //a
-		
-		
+		} //a	  
 	}
+  
+  /**
+   * Read in nxn matrix from file
+   */
 	private static double[][] loadMatrix(String filename, int n) throws FileNotFoundException {
 		double[][] matrix = new double[n][n];
 		File file = new File(filename);
@@ -47,6 +47,10 @@ public class GTTransportMapping {
 		scanner.close();//Does file need to be closed too?
 		return matrix;
 	}
+  
+  /**
+   * Read in array of length n from file
+   */
 	private static double[] loadArray(String filename, int n) throws FileNotFoundException {
 		double[] array = new double[n];
 		File file = new File(filename);
@@ -57,50 +61,55 @@ public class GTTransportMapping {
 		scanner.close();//Does file need to be closed too?
 		return array;
 	}
+  /**
+   * mapping() is the main functionality of this class
+   * It 1) maps the supplies, demands, and costs
+   * 2) computes the optimal transport with these mapped values
+   * 3) un-maps the supplies, demands, and costs
+   * 4) runs the greedyMatch
+   * and 5) computes and displays final solution
+  */
 	public static void mapping(int n, double[] supplies, double[] demands, double[][] cost, double delta) {
 		double maxC = max(cost);
+    // use adjusted costs/supplies/demands
 		double[][] newCost = mapCost(cost, delta);
 		double[] newSupplies = mapSupplies(supplies, n, maxC, delta);
 		double[] newDemands = mapDemands(demands, n, maxC, delta);
-		
-		
+    
+    // compute optimal transport using adjusted values
 		OptimalTransport otObj = null;
 		try {
 			otObj = new OptimalTransport(n, newSupplies, newDemands, newCost);
 		} catch (FileNotFoundException e) {
-			
 			e.printStackTrace();
 		}
 		//otObj.compute();
 		double[][] capacity = otObj.capacity;
-		
-		
+    
+    // calculate matched supplies/demands
 		double[] actualSupplies = new double[n];
 		double[] actualDemands = new double[n];
-		
 		for(int i = 0; i < n; i++) { //I believe this loop is correct, but I'm not 100% sure I understand the
 										//MATLAB syntax for this part
 			for(int j = 0; j < n*2; j++) {
 				actualDemands[i] += capacity[i + n][j];
 				actualSupplies[i] += capacity[j][i];
-				
 			}
 		}
-		
+    // convert to original inputs for comparison
 		original(actualDemands, n, maxC, delta);
 		original(actualSupplies, n, maxC, delta);
 		original(capacity, n, maxC, delta);
 		
-		
+    // determine the remaining supplies and demands
 		double[] remSupplies = new double[n];
 		double[] remDemands = new double[n];
-		
 		for(int i = 0; i < n; i++) {
 			remSupplies[i] = supplies[i] - actualSupplies[i];
 			remDemands[i] = actualDemands[i] - demands[i];
 		}
 		
-		
+    // push back extra demands
 		for(int i = n; i < 2*n; i++) {
 			int j = 1;
 			while(remDemands[i - n] > 0 && j < n) {
@@ -117,13 +126,13 @@ public class GTTransportMapping {
 				j++;
 			}
 		}
-		
 		absolute(remDemands);
 		
+    // match remaining supplies and demands
 		greedyMatch gm = new greedyMatch();
 		double[][] greedyCapacity = gm.greedyMatcher(n, remSupplies, remDemands, cost);
 		
-		
+    // determine final capacities
 		for(int i = 0; i < n; i++) {
 			for(int j = n; j < n * 2; j++) {
 				capacity[j][i] += greedyCapacity[i][j-n]; 
@@ -134,6 +143,7 @@ public class GTTransportMapping {
 		double totalTransportCost = 0;
 		double fulfilledCapacity = 0;
 		
+    //Sums totalTransportCost
 		for(int i = 0; i < n; i++) {
 			for(int j = n; j < 2*n; j++) {
 				if(capacity[j][i] > 0) {
@@ -143,7 +153,7 @@ public class GTTransportMapping {
 			}
 		}
 		
-		double tolerance = 0.0000001;
+		double tolerance = 0.0000001; //if any value is off by less than this it's ok
 		double[] finalDemandsUsed = new double[n];
 		double[] finalSuppliesUsed = new double[n];
 		for(int i = 0; i < n; i++) {
@@ -154,6 +164,7 @@ public class GTTransportMapping {
 			}
 		}
 		
+    //For testing the valididty of the solution, the residual supplies and demands are calculated
 		double[] residualS = new double[n];
 		double[] residualD = new double[n];
 		for(int i = 0; i < n; i++) {
@@ -161,6 +172,8 @@ public class GTTransportMapping {
 			residualD[i] = demands[i] - finalDemandsUsed[i];
 			
 		}
+    
+    //Assert that the transport is valid 
 		absolute(residualS);
 		absolute(residualD);
 		
@@ -172,23 +185,33 @@ public class GTTransportMapping {
 		}
 		assert(Math.abs(fulfilledCapacity - 1) <= tolerance);
 		
+    
+    
+    //Display solution
 		System.out.println("Result  = " + totalTransportCost);
 		
 	}
-	
+	/**
+   * Checks if all elements of arr are less than or equal to tol
+  */
 	public static boolean allLessOrEqual(double[] arr, double tol) {
 		for(int i = 0; i < arr.length; i++) {
 			if(arr[i] > tol)return false;
 		}
 		return true;
 	}
-	
+	/**
+   * Returns abs(arr)
+  */
 	public static void absolute(double[] arr) {
 		for(int i = 0; i < arr.length; i++) {
 			arr[i] = Math.abs(arr[i]);
 		}
 	}
-	
+	/**
+   * Un-maps an array
+   * Does arr *= delta / (4 * n * maxC)
+  */
 	public static void original(double[] arr, int n, double maxC, double delta) {
 		double denom = 4 * n * maxC;
 		for(int i = 0; i < n; i++) {
@@ -196,7 +219,12 @@ public class GTTransportMapping {
 		}
 		
 	}
-	
+	/**
+   * Overloaded method that un-maps a matrix
+   * does the same thing as the original method, but in the
+   * MATLAB implementation, it checks if the value to be un-mapped
+   * is not zero before continuing 
+  */
 	public static void original(double[][] arr, int n, double maxC, double delta) {
 		double denom = 4 * n * maxC;
 		for(int i = 0; i < arr.length; i++) {
@@ -207,29 +235,39 @@ public class GTTransportMapping {
 			}
 		}
 	}
-	
+	/**
+   * Maps dem[] using n, maxC, and delta
+   * Does dem *= 4 * n * maxC / delta. then ceils dem
+  */
 	public static double[] mapDemands(double[] dem, int n, double maxC, double delta) {
 		double[] newDem = new double[dem.length];
 		for(int i = 0; i< dem.length; i++) {
 			double temp = 4 * n * maxC * dem[i] / delta;
-			if(temp % 1 == 0) newDem[i] = (int) temp;
+			if(temp % 1 == 0) newDem[i] = (int) temp; //ceil demands, there is a 
+      																						//chance that the demand value is already an int
+                                                  //i.e. 4.000, so, just in case we must check 
 			else newDem[i] = ((int) temp) + 1;
 		}
 		return newDem;
 		
 	}
-	
+	/**
+   * Maps supp[] using n, maxC, and delta
+   * Does supp *= 4 * n * maxC / delta; for every element in supp then floors supp
+  */
 	public static double[] mapSupplies(double[] supp, int n, double maxC, double delta) {
 		double[] newSupp = new double[supp.length];
 		for(int i = 0; i < supp.length; i++) {
 			double temp = 4 * n * maxC *supp[i] / delta;
-			//double temp = 
-			newSupp[i] = (int) temp;
+			newSupp[i] = (int) temp; //floors temp
 		}
 		return newSupp;
 	}
 	
-	
+	/**
+   * Maps cost[][] using delta
+   * Simply does cost *= 4 / delta; for every element of cost[][]
+  */ 
 	public static double[][] mapCost(double[][] cost, double delta) {
 		double[][] nCost = new double[cost.length][cost[0].length];
 		for(int i = 0; i < cost.length; i++) {
@@ -240,7 +278,9 @@ public class GTTransportMapping {
 		}
 		return nCost;
 	}
-
+	/**
+   * Returns the greatest value in c by iterating through every value of c
+  */
 	public static double max(double[][] c) {
 		double maxC = -1;
 		for(int i = 0; i < c.length; i++) {
