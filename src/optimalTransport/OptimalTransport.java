@@ -28,8 +28,8 @@ public class OptimalTransport {
 		APLengths = 0;
 		deficiencyB = loadArray(fileDeficiencyB);
 		deficiencyA = loadArray(fileDeficiencyA);
-		CAB = loadMatrix(fileCost);
-		CBA = transpose(CAB);
+		CBA = loadMatrix(fileCost);
+		CAB = transpose(CBA);
 		BFree = setFree(deficiencyB);
 		AFree = setFree(deficiencyA);
 		dualWeights = new double[2*n];
@@ -48,8 +48,8 @@ public class OptimalTransport {
 		APLengths = 0;
 		deficiencyB = (fileDeficiencyB);
 		deficiencyA = (fileDeficiencyA);
-		CAB = (fileCost);
-		CBA = transpose(CAB);
+		CBA = (fileCost);
+		CAB = transpose(CBA);
 		BFree = setFree(deficiencyB);
 		AFree = setFree(deficiencyA);
 		dualWeights = new double[2*n];
@@ -119,8 +119,8 @@ public class OptimalTransport {
 	private void setSlacks() {
 		for (int i = 0; i < n; i++) {
 			for (int j = 0; j < n; j++) {
-				slackAB[j][i] = dualWeights[i+n] + dualWeights[j] - CAB[j][i];
-				slackBA[j][i] = CBA[j][i] + 1 - dualWeights[i] - dualWeights[j+n];
+				slackAB[i][j] = dualWeights[i+n] + dualWeights[j] - CAB[i][j];
+				slackBA[i][j] = CBA[i][j] + 1 - dualWeights[i] - dualWeights[j+n];
 			}
 		}
 	}
@@ -172,7 +172,7 @@ public class OptimalTransport {
 			if (minIndex < n) { // vertex of type B added to shortest path tree
 				for (int j = 0; j < n; j++) {
 					if (capacityBA[minIndex][j] > 0) {
-						double slack = slackBA[j][minIndex];
+						double slack = slackBA[minIndex][j];
 						if (lv[j+n] > lv[minIndex] + slack) {
 							lv[j+n] = lv[minIndex] + slack;
 						}
@@ -185,7 +185,7 @@ public class OptimalTransport {
 				if (AFree[a]) { return lv[minIndex]; }
 				for (int b = 0; b < n; b++) {
 					if (capacityAB[a][b] > 0) {
-						double slack = slackAB[b][a];
+						double slack = slackAB[a][b];
 						if (lv[b] > lv[minIndex] + slack) {
 							lv[b] = lv[minIndex] + slack;
 						}
@@ -224,10 +224,10 @@ public class OptimalTransport {
 	private void updateSlacks() {//invert i & j
 		for (int i = 0; i < n; i++) {
 			for (int j = 0; j < n; j++) {
-				//slackAB[j][i] = dualWeights[i+n] + dualWeights[j] - CAB[j][i]; //old
-				//slackBA[j][i] = CBA[j][i] + 1 - dualWeights[i] - dualWeights[j+n];
-				slackAB[i][j] = dualWeights[j+n] + dualWeights[i] - CAB[i][j];
-				slackBA[i][j] = CBA[i][j] + 1 - dualWeights[j] - dualWeights[i + n];
+				slackAB[i][j] = dualWeights[i+n] + dualWeights[j] - CAB[i][j]; //old
+				slackBA[i][j] = CBA[i][j] + 1 - dualWeights[i] - dualWeights[j+n];
+				//slackAB[i][j] = dualWeights[j+n] + dualWeights[i] - CAB[i][j];
+				//slackBA[i][j] = CBA[i][j] + 1 - dualWeights[j] - dualWeights[i + n];
 			}
 		}
 	}
@@ -297,7 +297,7 @@ public class OptimalTransport {
 				vertexVisited[vertex] = i;
 				if (vertex < n) { // vertex type B
 					int a = i - n;
-					if (slackBA[a][vertex] == 0 && capacityBA[vertex][a] > 0) {
+					if (slackBA[vertex][a] == 0 && capacityBA[vertex][a] > 0) {
 						backtrack = false;
 						AugPathVerIndex = AugPathVerIndex + 1;
 						augmentingPathVertices[AugPathVerIndex] = i;
@@ -306,7 +306,7 @@ public class OptimalTransport {
 				}
 				else { // vertex type A
 					int a = vertex - n; // LOOK HERE, PLUS ONE?
-					if (slackAB[i][a] == 0 && capacityAB[a][i] > 0) {//This capacity inversion may slow it a bit
+					if (slackAB[a][i] == 0 && capacityAB[a][i] > 0) {//This capacity inversion may slow it a bit
 						backtrack = false;
 						AugPathVerIndex++;
 						augmentingPathVertices[AugPathVerIndex] = i;

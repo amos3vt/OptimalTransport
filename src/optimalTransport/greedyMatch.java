@@ -28,9 +28,10 @@ public class greedyMatch {
 	public double[][] greedyMatcher(int n, double[] gSupplies, double[] gDemands, double[][] CostGreedy) {
 		long time = System.currentTimeMillis();
 		double[][] greedyCapacity = new double[n][n];
-		
+		long time0 = System.currentTimeMillis();
 		int[][] I = indexSort(CostGreedy);//
 		//System.out.println(Arrays.toString(I[15]));
+		System.out.println("Sort Time: " + (System.currentTimeMillis() - time0));
 		
 		for(int i = 0; i < n; i++) {
 			int j = 0;
