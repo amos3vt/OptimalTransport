@@ -14,7 +14,24 @@ public class GTTransportMapping {
 	private static double total_cost;
 	private static long tTime;
 	private static int iterations;
-
+	/**
+	 * How to call from MATLAB:
+	 * 
+	 * javaaddpath('PATH\Optimal Transport\bin\');
+	 * GTTransport_time = tic;
+     * arr = optimalTransport.GTTransportMapping.callFromMATLAB(n, a, b', C, delta);
+     * total_cost_transport = arr(1);
+     * iterationCountTransport = arr(2);
+     * GTTransport_time = toc(GTTransport_time);
+     * 
+     * 
+	 * @param n
+	 * @param supplies
+	 * @param demands
+	 * @param costs
+	 * @param delta
+	 * @return
+	 */
 	public static double[] callFromMATLAB(int n, double[] supplies, double[] demands, double[][] costs, double delta) {
 		long t1 = System.currentTimeMillis();
 		mapping(n, supplies, demands, costs, delta);

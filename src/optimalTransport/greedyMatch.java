@@ -65,6 +65,11 @@ public class greedyMatch {
 		return indices;
 		
 	}
+	/**
+	 * Doesn't actually sort, this is because it takes too much time: always ~300ms
+	 * @param costs
+	 * @return
+	 */
 	public int [][] indexSort(double[][] costs){
 		int[][] ind = new int[costs.length][costs[0].length];
 		for(int i = 0; i < costs.length; i++) {
