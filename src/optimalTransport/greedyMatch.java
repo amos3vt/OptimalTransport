@@ -42,7 +42,7 @@ public class greedyMatch {
 	 * @param costs
 	 * @return the sorted indices
 	 */
-	public int[][] indexSort(double[][] costs){
+	public int[][] indexSort2(double[][] costs){
 		//create Index matrix based on costs
 		Index[][] c = new Index[costs.length][costs[0].length];
 		for(int i = 0; i < costs.length; i++) {
@@ -63,6 +63,16 @@ public class greedyMatch {
 			}
 		}
 		return indices;
+		
+	}
+	public int [][] indexSort(double[][] costs){
+		int[][] ind = new int[costs.length][costs[0].length];
+		for(int i = 0; i < costs.length; i++) {
+			for(int j = 0; j < costs[0].length; j++) {
+				ind[i][j] = j;
+			}
+		}
+		return ind;
 	}
 	/**
 	 *  This inner class is for bundling the index and its data

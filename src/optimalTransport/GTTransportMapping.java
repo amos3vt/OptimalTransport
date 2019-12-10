@@ -11,8 +11,21 @@ public class GTTransportMapping {
 	// This function calls the GTTransport function with the appropriate
 	// arguments. It also calls the GreedyMatch function to match the remaining
 	// supplies and demands not computed by GTTransport.
+	private static double total_cost;
+	private static long tTime;
+	private static int iterations;
 
-
+	public static double[] callFromMATLAB(int n, double[] supplies, double[] demands, double[][] costs, double delta) {
+		long t1 = System.currentTimeMillis();
+		mapping(n, supplies, demands, costs, delta);
+		tTime = System.currentTimeMillis() - t1;
+		double[] ret = new double[2];
+		ret[0] = total_cost;
+		ret[1] = iterations;
+		return ret;//new double[((total_cost, ((double)(iterations)))];
+	}
+	public static long getTime() {return tTime;}
+	
 	
 	public static void main(String args[]) {
 		int n = Integer.parseInt(args[0]);
@@ -84,6 +97,7 @@ public class GTTransportMapping {
 			e.printStackTrace();
 		}
 		//otObj.compute();
+		iterations = otObj.iterations;
 		double[][] capacity = otObj.capacity;
     
     // calculate matched supplies/demands
@@ -189,6 +203,7 @@ public class GTTransportMapping {
     
     //Display solution
 		System.out.println("Result  = " + totalTransportCost);
+		total_cost = totalTransportCost;
 		
 	}
 	/**
